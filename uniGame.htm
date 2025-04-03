@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Memory Word Challenge</title>
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        padding: 0;
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        height: 100vh;
+        background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        color: #fff;
+        transition: background-color 0.4s ease-in-out;
+      }
+
+      #game {
+        background: rgba(255, 255, 255, 0.05);
+        backdrop-filter: blur(10px);
+        border: 2px solid rgba(255, 255, 255, 0.1);
+        border-radius: 20px;
+        padding: 40px 30px;
+        text-align: center;
+        box-shadow: 0 0 25px rgba(0, 0, 0, 0.5);
+        width: 90%;
+        max-width: 450px;
+        animation: fadeIn 1.2s ease;
+      }
+
+      select,
+      input,
+      button {
+        padding: 10px;
+        margin: 5px;
+        border: none;
+        border-radius: 8px;
+        background-color: #2b2b2b;
+        color: white;
+        font-size: 1rem;
+        outline: none;
+      }
+
+      button {
+        background: linear-gradient(135deg, #6e45e2, #88d3ce);
+        cursor: pointer;
+      }
+
+      #points,
+      #level,
+      #result {
+        margin: 5px;
+        font-size: 1.2rem;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(30px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="game">
+      <h2>Memory Word Challenge</h2>
+      <select id="language">
+        <option value="en">English</option>
+        <option value="fr">French</option>
+        <option value="pt-br">Brazilian</option>
+      </select>
+      <div id="wordDisplay">Click Start to Play</div>
+      <input type="text" id="userInput" placeholder="Your answer here" />
+      <button id="startBtn">Start</button>
+      <button id="submitBtn" disabled>Submit</button>
+      <p id="points">Points: 0</p>
+      <p id="level">Level: 1</p>
+      <p id="result"></p>
+    </div>
+    <script>
+      let points = 0;
+      let level = 1;
+      let currentWord = "";
+
+      async function fetchWords(language) {
+        const number = Math.floor(Math.random() * 10) + 1;
+        const url = `https://random-word-api.herokuapp.com/word?number=${number}&lang=${language}`;
+        const response = await fetch(url);
+        return await response.json();
+      }
+
+      async function startGame() {
+        const language = document.getElementById("language").value;
+        const words = await fetchWords(language);
+        currentWord = words[Math.floor(Math.random() * words.length)];
+        document.getElementById("wordDisplay").textContent = currentWord;
+        setTimeout(() => {
+          document.getElementById("wordDisplay").textContent = "?";
+          document.getElementById("submitBtn").disabled = false;
+        }, 2000);
+      }
+
+      function checkAnswer() {
+        const input = document.getElementById("userInput").value.trim();
+        if (input.toLowerCase() === currentWord.toLowerCase()) {
+          points++;
+          document.getElementById("result").textContent = "Correct!";
+        } else {
+          points = Math.max(0, points - 1);
+          document.getElementById("result").textContent = "Wrong!";
+        }
+        level = Math.floor(points / 3) + 1;
+        document.getElementById("points").textContent = `Points: ${points}`;
+        document.getElementById("level").textContent = `Level: ${level}`;
+        document.getElementById("userInput").value = "";
+        startGame();
+      }
+
+      document.getElementById("startBtn").addEventListener("click", startGame);
+      document
+        .getElementById("submitBtn")
+        .addEventListener("click", checkAnswer);
+    </script>
+  </body>
+</html>
